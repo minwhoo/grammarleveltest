@@ -1,9 +1,26 @@
 import React, { Component } from 'react';
+import ProgressBar from 'progressbar.js';
 
 class CountdownBar extends Component {
+    componentDidMount() {
+        this.bar = new ProgressBar.Line('#timer', {
+            color: '#aaa',
+            trailColor: '#fff',
+            // easing: 'easeInOut'
+        });
+        this.startCountdown();
+    }
+
+    startCountdown() {
+        this.bar.set(1);
+        this.bar.animate(0, {
+            duration: 2000
+        }, this.props.onTimeout);
+    }
+
     render() {
         return (
-            <div>countdown bar</div>
+            <div id="timer"></div>
         );
     }
 }
@@ -28,6 +45,7 @@ class GrammarTest extends Component {
         this.questions = this.props.questions;
         this.correctAnswer = undefined;
         this.count = 0;
+        this.answers = [];
 
         //  set states for auto-rendering
         this.state = {
@@ -35,8 +53,9 @@ class GrammarTest extends Component {
             testFinished: false
         }
 
-        // prepare for callback
+        // prepare functions for callback
         this.checkAnswer = this.checkAnswer.bind(this);
+        this.onTimeout = this.onTimeout.bind(this);
     }
 
     getQuestion() {
@@ -49,6 +68,11 @@ class GrammarTest extends Component {
             this.correctAnswer = 1;
             return question.sentence_incorrect;
         }
+    }
+
+    onTimeout() {
+        console.log("Timeout!!!");
+        this.getNextQuestion();
     }
 
     checkAnswer(answer) {
@@ -69,6 +93,7 @@ class GrammarTest extends Component {
             this.setState({
                 currentQuestion: text
             });
+            this.refs.timer.startCountdown();
         }
         else {
             this.setState({
@@ -76,6 +101,7 @@ class GrammarTest extends Component {
             });
         }
     }
+
     render() {
         // <QuestionText text={this.getQuestion()}/>
         const testFinished = this.state.testFinished;
@@ -84,7 +110,7 @@ class GrammarTest extends Component {
             <div className="container">
             {!testFinished ? (
                 <div>
-                <CountdownBar />
+                <CountdownBar ref="timer" onTimeout={this.onTimeout} />
                 <QuestionText text={this.state.currentQuestion} />
                 <UserInput callback={this.checkAnswer} />
                 </div>
