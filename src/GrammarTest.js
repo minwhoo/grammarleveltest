@@ -55,12 +55,14 @@ class GrammarTest extends Component {
         //  set states for auto-rendering
         this.state = {
             currentQuestion: this.getQuestion(),
+            testStarted: false,
             testFinished: false
         }
 
         // prepare functions for callback
         this.checkAnswer = this.checkAnswer.bind(this);
         this.onTimeout = this.onTimeout.bind(this);
+        this.onStart = this.onStart.bind(this);
     }
 
     getQuestion() {
@@ -73,6 +75,13 @@ class GrammarTest extends Component {
             this.correctAnswer = 1;
             return question.sentence_incorrect;
         }
+    }
+
+    onStart() {
+        console.log("Test started!!");
+        this.setState({
+            testStarted: true
+        });
     }
 
     onTimeout() {
@@ -110,21 +119,27 @@ class GrammarTest extends Component {
 
     render() {
         // <QuestionText text={this.getQuestion()}/>
-        const testFinished = this.state.testFinished;
-
-        return (
-            <div className="container">
-            {!testFinished ? (
+        let displayBox;
+        if (!this.state.testStarted) {
+            displayBox = <button onClick={this.onStart}>Start</button>;
+        }
+        else if (this.state.testFinished) {
+            displayBox = <h1>Test finished!</h1>;
+        }
+        else {
+            displayBox = (
                 <div>
                 <CountdownBar ref="timer" onTimeout={this.onTimeout} />
                 <QuestionText text={this.state.currentQuestion} />
                 <UserInput callback={this.checkAnswer} />
                 </div>
-            ) : (
-                <h1>Test Finished!</h1>
-            )}
+            );
+        }
+        return (
+            <div className="container">
+                {displayBox}
             </div>
-    );
+        );
     }
 }
 
