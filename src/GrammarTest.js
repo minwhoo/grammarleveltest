@@ -18,6 +18,11 @@ class CountdownBar extends Component {
         }, this.props.onTimeout);
     }
 
+    stopTimer() {
+        console.log("Timer stopped!");
+        this.bar.stop();
+    }
+
     render() {
         return (
             <div id="timer"></div>
@@ -96,6 +101,7 @@ class GrammarTest extends Component {
             this.refs.timer.startCountdown();
         }
         else {
+            this.refs.timer.stopTimer();
             this.setState({
                 testFinished: true
             });
