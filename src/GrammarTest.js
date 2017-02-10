@@ -1,28 +1,41 @@
-class GrammarTest {
-    constructor() {
-        this.questions = [
-        {
-            category: 'plural',
-            sentence_correct: 'They are hungry',
-            sentence_incorrect: 'They is hungry',
-            level: 1
-        },
-        {
-            category: 'plural',
-            sentence_correct: 'He is tired',
-            sentence_incorrect: 'He are tired',
-            level: 1
-        },
-        {
-            category: 'plural',
-            sentence_correct: 'We are friends',
-            sentence_incorrect: 'We is friends',
-            level: 1
-        }
-        ]
+import React, { Component } from 'react';
 
+class CountdownBar extends Component {
+    render() {
+        return (
+            <div>countdown bar</div>
+        );
+    }
+}
+
+function  QuestionText(props) {
+    return <div><h1>{props.text}</h1></div>
+};
+
+function UserInput(props) {
+    return (
+        <div>
+            <button onClick={() => props.callback(0)}>O</button>
+            <button onClick={() => props.callback(1)}>X</button>
+        </div>
+    );
+};
+
+class GrammarTest extends Component {
+    constructor(props) {
+        super(props)
+        // variables to check questions and answers
+        this.questions = this.props.questions;
         this.correctAnswer = undefined;
         this.count = 0;
+
+        //  set states for auto-rendering
+        this.state = {
+            currentQuestion: this.getQuestion(),
+            testFinished: false
+        }
+
+        // prepare for callback
         this.checkAnswer = this.checkAnswer.bind(this);
     }
 
@@ -39,23 +52,47 @@ class GrammarTest {
     }
 
     checkAnswer(answer) {
-        if (answer == this.correctAnswer) {
+        if (answer === this.correctAnswer) {
             console.log("Correct!!!");
         }
         else {
             console.log("Incorrect!!!");
         }
 
+        this.getNextQuestion();
     }
 
     getNextQuestion() {
         this.count++;
         if (this.count < this.questions.length) {
-            this.getQuestion();
+            const text = this.getQuestion();
+            this.setState({
+                currentQuestion: text
+            });
         }
         else {
-            return false;
+            this.setState({
+                testFinished: true
+            });
         }
+    }
+    render() {
+        // <QuestionText text={this.getQuestion()}/>
+        const testFinished = this.state.testFinished;
+
+        return (
+            <div className="container">
+            {!testFinished ? (
+                <div>
+                <CountdownBar />
+                <QuestionText text={this.state.currentQuestion} />
+                <UserInput callback={this.checkAnswer} />
+                </div>
+            ) : (
+                <h1>Test Finished!</h1>
+            )}
+            </div>
+    );
     }
 }
 
