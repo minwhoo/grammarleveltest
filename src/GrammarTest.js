@@ -11,10 +11,10 @@ class CountdownBar extends Component {
         this.startCountdown();
     }
 
-    startCountdown() {
+    startCountdown(timeInSeconds=2) {
         this.bar.set(1);
         this.bar.animate(0, {
-            duration: 2000
+            duration: timeInSeconds * 1000
         }, this.props.onTimeout);
     }
 
