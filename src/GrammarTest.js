@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import ProgressBar from 'progressbar.js';
+import { OXQuiz, FindWrongBlockQuiz, FillBlankQuiz } from './Quiz.js';
 
 class CountdownBar extends Component {
     componentDidMount() {
@@ -30,19 +31,6 @@ class CountdownBar extends Component {
     }
 }
 
-function  QuestionText(props) {
-    return <div><h1>{props.text}</h1></div>
-};
-
-function UserInput(props) {
-    return (
-        <div>
-            <button onClick={() => props.callback(0)}>O</button>
-            <button onClick={() => props.callback(1)}>X</button>
-        </div>
-    );
-};
-
 class GrammarTest extends Component {
     constructor(props) {
         super(props)
@@ -51,6 +39,7 @@ class GrammarTest extends Component {
         this.correctAnswer = undefined;
         this.count = 0;
         this.answers = [];
+        this.stage = 0;
 
         //  set states for auto-rendering
         this.state = {
@@ -60,28 +49,22 @@ class GrammarTest extends Component {
         }
 
         // prepare functions for callback
-        this.checkAnswer = this.checkAnswer.bind(this);
+        // this.checkAnswer = this.checkAnswer.bind(this);
+        this.processResponse = this.processResponse.bind(this);
         this.onTimeout = this.onTimeout.bind(this);
-        this.onStart = this.onStart.bind(this);
+        this.startTest= this.startTest.bind(this);
     }
 
-    getQuestion() {
-        let question = this.questions[this.count];
-        if ( Math.random() < 0.5 ) {
-            this.correctAnswer = 0;
-            return question.sentence_correct;
-        }
-        else {
-            this.correctAnswer = 1;
-            return question.sentence_incorrect;
-        }
-    }
-
-    onStart() {
+    startTest() {
         console.log("Test started!!");
         this.setState({
             testStarted: true
         });
+        this.stage = 1;
+    }
+
+    getQuestion() {
+        return this.questions[this.count];
     }
 
     onTimeout() {
@@ -89,8 +72,8 @@ class GrammarTest extends Component {
         this.getNextQuestion();
     }
 
-    checkAnswer(answer) {
-        if (answer === this.correctAnswer) {
+    processResponse(response) {
+        if (response === 1 || response === 2) {
             console.log("Correct!!!");
         }
         else {
@@ -103,17 +86,22 @@ class GrammarTest extends Component {
     getNextQuestion() {
         this.count++;
         if (this.count < this.questions.length) {
-            const text = this.getQuestion();
             this.setState({
-                currentQuestion: text
+                currentQuestion: this.getQuestion()
             });
             this.refs.timer.startCountdown();
         }
         else {
-            this.refs.timer.stopTimer();
+            this.count = 0;
+            this.stage++;
             this.setState({
-                testFinished: true
+                currentQuestion: this.getQuestion()
             });
+            this.refs.timer.startCountdown();
+            // this.refs.timer.stopTimer();
+            // this.setState({
+            //     testFinished: true
+            // });
         }
     }
 
@@ -121,23 +109,39 @@ class GrammarTest extends Component {
         // <QuestionText text={this.getQuestion()}/>
         let displayBox;
         if (!this.state.testStarted) {
-            displayBox = <button onClick={this.onStart}>Start</button>;
+            displayBox = <button className="ui button" onClick={this.startTest}>Start</button>;
         }
         else if (this.state.testFinished) {
             displayBox = <h1>Test finished!</h1>;
         }
         else {
+            let questionBox;
+            switch (this.stage) {
+                case 1:
+                    questionBox = <OXQuiz question={this.state.currentQuestion} onResponse={this.processResponse} />
+                    break;
+                case 2:
+                    questionBox = <FindWrongBlockQuiz question={this.state.currentQuestion} onResponse={this.processResponse} />
+                    break;
+                case 3:
+                    questionBox = <FillBlankQuiz question={this.state.currentQuestion} onResponse={this.processResponse} />
+
+                    break;
+                default:
+                    throw new Error("Unsupported Stage!!!");
+            }
             displayBox = (
                 <div>
                 <CountdownBar ref="timer" onTimeout={this.onTimeout} />
-                <QuestionText text={this.state.currentQuestion} />
-                <UserInput callback={this.checkAnswer} />
+                {questionBox}
                 </div>
             );
         }
         return (
-            <div className="container">
+            <div className="ui text container">
+            <div className="ui very padded segment">
                 {displayBox}
+            </div>
             </div>
         );
     }
