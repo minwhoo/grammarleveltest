@@ -1,5 +1,13 @@
 import React  from 'react';
 
+/**
+ * Boilerplate class for all quizzes
+ *
+ * Quiz must implement three functions:
+ *  - setTextAndAnswer(): must set this.text and this.answer
+ *  - setFeedback(): must set this.feedback
+ *  - checkAnswer(answer): must be called on enter button and must call this.callback at the end
+ */
 class Quiz extends React.Component {
     constructor(props) {
         super(props);
@@ -7,6 +15,8 @@ class Quiz extends React.Component {
         this.initializeProperties(props);
         this.setTextAndAnswer();
         this.setFeedback();
+
+        this.checkAnswer = this.checkAnswer.bind(this);
     }
 
     initializeProperties(props) {
@@ -28,6 +38,9 @@ class Quiz extends React.Component {
     }
     setFeedback() {
         this.feedback = <button>Okay</button>;
+    }
+
+    checkAnswer(answer) {
     }
 
     render() {
@@ -129,6 +142,60 @@ class FindWrongBlockQuiz extends Quiz {
 }
 
 class FillBlankQuiz extends Quiz {
+    setTextAndAnswer() {
+        let words_incorrect = this.sentence_incorrect.split(" ");
+        let words_correct = this.sentence_correct.split(" ");
+        this.answer = undefined;
+
+        //  calculate right answer
+        let wrongIndex;
+        words_incorrect.forEach( (word, index) => {
+            if (words_correct[index] !== word) {
+                if (!this.answer) {
+                    this.answer = words_correct[index];
+                    wrongIndex = index;
+                } else {
+                    throw new Error("Multiple mismatches between correct and incorrect sentence");
+                }
+            }
+        });
+
+        const wordButtons = words_incorrect.map( (word, index) => {
+            if (index === wrongIndex) {
+                return (
+                    <div className="ui input" key={index.toString()}>
+                      <input ref={input => this.textInput = input} type="text" placeholder="type" />
+                    </div> );
+            } else {
+                return <h1 key={index.toString()}>{word}</h1>;
+            }
+        });
+        this.text = (
+            <div>
+            {wordButtons}
+            </div>
+        );
+    }
+
+    setFeedback() {
+        this.feedback = <button className="ui button" onClick={() => this.checkAnswer(this.textInput.value)}>Enter</button>;
+    }
+
+    componentWillReceiveProps(nextProps) {
+        super.componentWillReceiveProps(nextProps);
+        this.textInput.value = "";
+    }
+
+    checkAnswer(answer) {
+        let response;
+        if (this.answer === answer) {
+            response = 1;
+        } else {
+            response = answer;
+        }
+
+        this.callback(response);
+    }
 }
 
 export { OXQuiz, FindWrongBlockQuiz, FillBlankQuiz };
