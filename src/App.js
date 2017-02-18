@@ -4,28 +4,32 @@ import GrammarTest from './GrammarTest.js';
 
 var QUESTIONS = [
     {
-        category: 'plural',
+        category: 'A',
         sentence_correct: 'They are hungry',
         sentence_incorrect: 'They is hungry',
-        level: 1
+        level: 1,
+        options: ["is","are"]
     },
     {
-        category: 'plural',
+        category: 'A',
         sentence_correct: 'He is tired',
         sentence_incorrect: 'He are tired',
-        level: 1
+        level: 1,
+        options: ["is","are"]
     },
     {
-        category: 'plural',
+        category: 'B',
         sentence_correct: 'We are friends',
         sentence_incorrect: 'We is friends',
-        level: 1
+        level: 1,
+        options: ["is","are"]
     },
     {
-        category: 'plural',
+        category: 'B',
         sentence_correct: 'My friends are the best',
         sentence_incorrect: 'My friends is the best',
-        level: 1
+        level: 1,
+        options: ["is","are"]
     }
 ];
 

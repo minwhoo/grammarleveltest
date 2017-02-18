@@ -11,36 +11,60 @@ import React  from 'react';
 class Quiz extends React.Component {
     constructor(props) {
         super(props);
-
-        this.initializeProperties(props);
-        this.setTextAndAnswer();
-        this.setFeedback();
-
-        this.checkAnswer = this.checkAnswer.bind(this);
-    }
-
-    initializeProperties(props) {
-        this.question = props.question;
-        this.sentence_correct = this.question.sentence_correct;
-        this.sentence_incorrect = this.question.sentence_incorrect;
+         
         this.callback = props.onResponse;
         this.answer = undefined;
+
+        this.checkAnswer = this.checkAnswer.bind(this);
+        this.handleKeyPress = this.handleKeyPress.bind(this);
     }
 
-    componentWillReceiveProps(nextProps) {
-        this.initializeProperties(nextProps);
-        this.setTextAndAnswer();
-        this.setFeedback();
+    //  convenience getter functions for question
+    get sentence_correct() {
+        return this.props.question.sentence_correct;
+    }
+    get sentence_incorrect() {
+        return this.props.question.sentence_incorrect;
+    }
+    get options() {
+        return this.props.question.options;
     }
 
-    setTextAndAnswer() {
-        this.text = <h1>question text</h1>;
+    get text() {
+        return <h1>question text</h1>;
     }
-    setFeedback() {
-        this.feedback = <button>Okay</button>;
+    get feedback() {
+        return <button>Okay</button>;
     }
 
     checkAnswer(answer) {
+        //  checks answer
+    }
+    handleKeyPress(e) {
+        //  handles keypress
+    }
+
+    findWrongWord() {
+        const words_correct = this.sentence_correct.split(" ");
+        const words_incorrect = this.sentence_incorrect.split(" ");
+        let incorrectWord;
+        let correctWord;
+        let wrongIndex;
+        words_incorrect.forEach( (word, index) => {
+            if (words_correct[index] !== word) {
+                incorrectWord = word;
+                correctWord = words_correct[index];
+                wrongIndex = index;
+            }
+        });
+
+        return {
+            words_correct: words_correct,
+            words_incorrect: words_incorrect,
+            correct_word: correctWord,
+            incorrect_word: incorrectWord,
+            index: wrongIndex
+        };
     }
 
     render() {
@@ -54,7 +78,7 @@ class Quiz extends React.Component {
 }
 
 class OXQuiz extends Quiz {
-    setTextAndAnswer() {
+    get text() {
         let text;
         if (Math.random() < 0.5) {
             text = this.sentence_correct;
@@ -63,23 +87,39 @@ class OXQuiz extends Quiz {
             text = this.sentence_incorrect;
             this.answer = 1;
         }
-        this.text = <h1>{text}</h1>;
+        return <h1>{text}</h1>;
     }
 
-    setFeedback() {
-        this.feedback = (
+    get feedback() {
+        return (
             <div>
-            <button className="ui button" onClick={() => this.checkAnswer(0)}>
-                <i className="radio icon" />
+            <button className="ui icon button" onClick={() => this.checkAnswer(0)}>
+                <i className="radio large icon" />
             </button>
-            <button className="ui button" onClick={() => this.checkAnswer(1)}>
-                <i className="remove icon" />
+            <button className="ui icon button" onClick={() => this.checkAnswer(1)}>
+                <i className="remove large icon" />
             </button>
             </div>
         );
     }
 
+    componentDidMount() {
+        document.addEventListener('keydown', this.handleKeyPress);
+    }
+    componentWillUnmount() {
+        document.removeEventListener('keydown', this.handleKeyPress);
+    }
+
+    handleKeyPress(e) {
+        if (e.keyCode === 37) {
+            this.checkAnswer(0);
+        } else if (e.keyCode === 39) {
+            this.checkAnswer(1);
+        }
+    }
+
     checkAnswer(answer) {
+        console.log(answer);
         let response;
         if (this.answer === answer) {
             if (this.answer === 0) {
@@ -99,34 +139,22 @@ class OXQuiz extends Quiz {
 }
 
 class FindWrongBlockQuiz extends Quiz {
-    setTextAndAnswer() {
-        let words_incorrect = this.sentence_incorrect.split(" ");
-        let words_correct = this.sentence_correct.split(" ");
-        this.answer = undefined;
+    get text() {
+        const wrongResults = this.findWrongWord();
+        this.answer = wrongResults.index;
 
-        //  calculate right answer
-        words_incorrect.forEach( (word, index) => {
-            if (words_correct[index] !== word) {
-                if (!this.answer) {
-                    this.answer = index;
-                } else {
-                    throw new Error("Multiple mismatches between correct and incorrect sentence");
-                }
-            }
-        });
-
-        const wordButtons = words_incorrect.map( (word, index) => 
-            <button className="ui button" key={index.toString()} onClick={() => this.checkAnswer(index)}>{word}</button>
+        const wordButtons = wrongResults.words_incorrect.map( (word, index) => 
+            <button className="ui big basic button wordbutton" key={index.toString()} onClick={() => this.checkAnswer(index)}>{word}</button>
         );
-        this.text = (
+        return(
             <div>
             {wordButtons}
             </div>
         );
     }
 
-    setFeedback() {
-        this.feedback = undefined;
+    get feedback() {
+        return undefined;
     }
 
     checkAnswer(answer) {
@@ -141,49 +169,91 @@ class FindWrongBlockQuiz extends Quiz {
     }
 }
 
-class FillBlankQuiz extends Quiz {
-    setTextAndAnswer() {
-        let words_incorrect = this.sentence_incorrect.split(" ");
-        let words_correct = this.sentence_correct.split(" ");
-        this.answer = undefined;
+class MultipleChoiceQuiz extends Quiz {
+    get text() {
+        const wrongResults = this.findWrongWord();
+        this.answer = wrongResults.correct_word;
 
-        //  calculate right answer
-        let wrongIndex;
-        words_incorrect.forEach( (word, index) => {
-            if (words_correct[index] !== word) {
-                if (!this.answer) {
-                    this.answer = words_correct[index];
-                    wrongIndex = index;
-                } else {
-                    throw new Error("Multiple mismatches between correct and incorrect sentence");
-                }
-            }
-        });
-
-        const wordButtons = words_incorrect.map( (word, index) => {
-            if (index === wrongIndex) {
+        const wordBlocks = wrongResults.words_incorrect.map( (word, index) => {
+            if (index === wrongResults.index) {
                 return (
-                    <div className="ui input" key={index.toString()}>
-                      <input ref={input => this.textInput = input} type="text" placeholder="type" />
-                    </div> );
+                    <div key={index.toString()} className="ui steps">
+                      <div className="step">    </div>
+                    </div>
+                );
             } else {
                 return <h1 key={index.toString()}>{word}</h1>;
             }
         });
-        this.text = (
+        // this.textInput.focus();
+        return(
+            <div>
+            {wordBlocks}
+            </div>
+        );
+    }
+    get feedback() {
+        const wordButtons = this.options.map( (word, index) => 
+            <button className="ui big basic button wordbutton" key={index.toString()} onClick={() => this.checkAnswer(word)}>{word}</button>
+        );
+        return (
             <div>
             {wordButtons}
             </div>
         );
     }
+    checkAnswer(answer) {
+        let response;
+        if (this.answer===answer) {
+            response = 1;
+        } else {
+            response = answer;
+        }
 
-    setFeedback() {
-        this.feedback = <button className="ui button" onClick={() => this.checkAnswer(this.textInput.value)}>Enter</button>;
+        this.callback(response);
+    }
+}
+
+class FillBlankQuiz extends Quiz {
+    get text() {
+        const wrongResults = this.findWrongWord();
+        this.answer = wrongResults.correct_word;
+
+        const wordBlocks = wrongResults.words_incorrect.map( (word, index) => {
+            if (index === wrongResults.index) {
+                return (
+                    <div className="ui input" key={index.toString()}>
+                      <input ref={input => this.textInput = input} type="text" onKeyPress={this.handleKeyPress} placeholder="type" />
+                    </div> );
+            } else {
+                return <h1 key={index.toString()}>{word}</h1>;
+            }
+        });
+        // this.textInput.focus();
+        return(
+            <div>
+            {wordBlocks}
+            </div>
+        );
     }
 
-    componentWillReceiveProps(nextProps) {
-        super.componentWillReceiveProps(nextProps);
+    handleKeyPress(e) {
+        if (e.key === 'Enter') {
+            this.checkAnswer(this.textInput.value);
+        }
+    }
+
+    get feedback() {
+        return <button className="ui primary button" onClick={() => this.checkAnswer(this.textInput.value)}>Enter</button>;
+    }
+
+    componentDidUpdate() {
         this.textInput.value = "";
+        this.textInput.focus();
+    }
+
+    componentDidMount() {
+        this.textInput.focus();
     }
 
     checkAnswer(answer) {
@@ -198,4 +268,4 @@ class FillBlankQuiz extends Quiz {
     }
 }
 
-export { OXQuiz, FindWrongBlockQuiz, FillBlankQuiz };
+export { OXQuiz, FindWrongBlockQuiz, MultipleChoiceQuiz, FillBlankQuiz };

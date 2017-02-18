@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import ProgressBar from 'progressbar.js';
 import { OXQuiz, FindWrongBlockQuiz, FillBlankQuiz } from './Quiz.js';
+import { OXQuiz, FindWrongBlockQuiz, MultipleChoiceQuiz, FillBlankQuiz } from './Quiz.js';
 
 class CountdownBar extends Component {
     componentDidMount() {
@@ -95,7 +96,7 @@ class GrammarTest extends Component {
             this.stage++;
         }
 
-        if (this.stage > 3) { // condition for level test to end
+        if (this.stage > 4) { // condition for level test to end
             // this.refs.timer.stopTimer();
             this.finishTest();
         } else {
@@ -123,6 +124,9 @@ class GrammarTest extends Component {
                     break;
                 case 2:
                     questionBox = <FindWrongBlockQuiz question={this.state.currentQuestion} onResponse={this.processResponse} />
+                    break;
+                case 4:
+                    questionBox = <MultipleChoiceQuiz question={this.state.currentQuestion} onResponse={this.processResponse} />
                     break;
                 case 3:
                     questionBox = <FillBlankQuiz question={this.state.currentQuestion} onResponse={this.processResponse} />
