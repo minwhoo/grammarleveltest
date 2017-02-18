@@ -36,7 +36,6 @@ class GrammarTest extends Component {
         super(props)
         // variables to check questions and answers
         this.questions = this.props.questions;
-        this.correctAnswer = undefined;
         this.count = 0;
         this.answers = [];
         this.stage = 0;
@@ -49,7 +48,6 @@ class GrammarTest extends Component {
         }
 
         // prepare functions for callback
-        // this.checkAnswer = this.checkAnswer.bind(this);
         this.processResponse = this.processResponse.bind(this);
         this.onTimeout = this.onTimeout.bind(this);
         this.startTest= this.startTest.bind(this);
@@ -61,6 +59,12 @@ class GrammarTest extends Component {
             testStarted: true
         });
         this.stage = 1;
+    }
+
+    finishTest() {
+        this.setState({
+            testFinished: true
+        });
     }
 
     getQuestion() {
@@ -79,37 +83,34 @@ class GrammarTest extends Component {
         else {
             console.log("Incorrect!!!");
         }
-
+        this.answers.push(response);
         this.getNextQuestion();
     }
 
     getNextQuestion() {
         this.count++;
-        if (this.count < this.questions.length) {
-            this.setState({
-                currentQuestion: this.getQuestion()
-            });
-            this.refs.timer.startCountdown();
-        }
-        else {
+
+        if (this.count >= this.questions.length) { // condition to raise stage
             this.count = 0;
             this.stage++;
+        }
+
+        if (this.stage > 3) { // condition for level test to end
+            // this.refs.timer.stopTimer();
+            this.finishTest();
+        } else {
             this.setState({
                 currentQuestion: this.getQuestion()
             });
-            this.refs.timer.startCountdown();
-            // this.refs.timer.stopTimer();
-            // this.setState({
-            //     testFinished: true
-            // });
+            // this.refs.timer.startCountdown();
         }
     }
 
     render() {
-        // <QuestionText text={this.getQuestion()}/>
-        let displayBox;
+        let displayBox; // Either start screen, question screen, or finish screen
+
         if (!this.state.testStarted) {
-            displayBox = <button className="ui button" onClick={this.startTest}>Start</button>;
+            displayBox = <button className="ui big primary button" onClick={this.startTest}>Start</button>;
         }
         else if (this.state.testFinished) {
             displayBox = <h1>Test finished!</h1>;
@@ -125,7 +126,6 @@ class GrammarTest extends Component {
                     break;
                 case 3:
                     questionBox = <FillBlankQuiz question={this.state.currentQuestion} onResponse={this.processResponse} />
-
                     break;
                 default:
                     throw new Error("Unsupported Stage!!!");
@@ -137,12 +137,11 @@ class GrammarTest extends Component {
                 </div>
             );
         }
+
         return (
-            <div className="ui text container">
-            <div className="ui very padded segment">
+            <div className="ui text container"><div className="ui very padded segment">
                 {displayBox}
-            </div>
-            </div>
+            </div></div>
         );
     }
 }
