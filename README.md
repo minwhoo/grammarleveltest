@@ -1,7 +1,12 @@
 # English Grammar Level Test App
 
-to start test server:
+A front-end for Grammar level testing app. Created with create-react-app
+ 
+1. Install package
+'npm install'
+
+2. Start the test server:
 `npm start`
 
-to build for production:
+To build for production:
 `npm run build`
