@@ -1,4 +1,5 @@
 import React  from 'react';
+import './Quiz.css';
 
 /**
  * Boilerplate class for all quizzes
@@ -69,9 +70,9 @@ class Quiz extends React.Component {
 
     render() {
         return (
-            <div>
-              {this.text}
-              {this.feedback}
+            <div className="Quiz">
+              <div className="quiz-text">{this.text}</div>
+              <div className="feedback">{this.feedback}</div>
             </div>
         );
     }
@@ -92,13 +93,19 @@ class OXQuiz extends Quiz {
 
     get feedback() {
         return (
-            <div>
+            <div className="ui grid">
+            <div className="four wide column"></div>
+            <div className="four wide column">
             <button className="ui icon button" onClick={() => this.checkAnswer(0)}>
                 <i className="radio large icon" />
             </button>
+            </div>
+            <div className="four wide column">
             <button className="ui icon button" onClick={() => this.checkAnswer(1)}>
                 <i className="remove large icon" />
             </button>
+            </div>
+            <div className="four wide column"></div>
             </div>
         );
     }
@@ -175,15 +182,13 @@ class MultipleChoiceQuiz extends Quiz {
         this.answer = wrongResults.correct_word;
 
         const wordBlocks = wrongResults.words_incorrect.map( (word, index) => {
+            let wordElement;
             if (index === wrongResults.index) {
-                return (
-                    <div key={index.toString()} className="ui steps">
-                      <div className="step">    </div>
-                    </div>
-                );
+                wordElement = <div className="ui steps"><div className="step">    </div></div>
             } else {
-                return <h1 key={index.toString()}>{word}</h1>;
+                wordElement = <h1>{word}</h1>;
             }
+            return <div className="wordblock" key={index.toString()}>{wordElement}</div>;
         });
         // this.textInput.focus();
         return(
@@ -220,14 +225,13 @@ class FillBlankQuiz extends Quiz {
         this.answer = wrongResults.correct_word;
 
         const wordBlocks = wrongResults.words_incorrect.map( (word, index) => {
+            let wordElement;
             if (index === wrongResults.index) {
-                return (
-                    <div className="ui input" key={index.toString()}>
-                      <input ref={input => this.textInput = input} type="text" onKeyPress={this.handleKeyPress} placeholder="type" />
-                    </div> );
+                wordElement = <input ref={input => this.textInput = input} type="text" onKeyPress={this.handleKeyPress} placeholder="type" />;
             } else {
-                return <h1 key={index.toString()}>{word}</h1>;
+                wordElement = <h1>{word}</h1>;
             }
+            return <div className="ui input wordblock" key={index.toString()}>{wordElement}</div>;
         });
         // this.textInput.focus();
         return(
