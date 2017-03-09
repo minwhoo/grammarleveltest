@@ -190,7 +190,6 @@ class MultipleChoiceQuiz extends Quiz {
             }
             return <div className="wordblock" key={index.toString()}>{wordElement}</div>;
         });
-        // this.textInput.focus();
         return(
             <div>
             {wordBlocks}
@@ -233,7 +232,11 @@ class FillBlankQuiz extends Quiz {
             }
             return <div className="ui input wordblock" key={index.toString()}>{wordElement}</div>;
         });
-        // this.textInput.focus();
+
+        //  reset text input
+        this.textInput.value = "";
+        this.textInput.focus();
+
         return(
             <div>
             {wordBlocks}
@@ -249,15 +252,6 @@ class FillBlankQuiz extends Quiz {
 
     get feedback() {
         return <button className="ui primary button" onClick={() => this.checkAnswer(this.textInput.value)}>Enter</button>;
-    }
-
-    componentDidUpdate() {
-        this.textInput.value = "";
-        this.textInput.focus();
-    }
-
-    componentDidMount() {
-        this.textInput.focus();
     }
 
     checkAnswer(answer) {
